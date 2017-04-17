@@ -198,4 +198,4 @@ class VolSegDataManager(object):
         while True:
             yield self.get_rand_test_batch(batch_size=batch_size)
 
-# todo: implement chunking as an option like in data_aug
+# todo: implement chunking as an option like data_aug
