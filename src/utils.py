@@ -114,24 +114,31 @@ class VolSegDataManager(object):
         x = normalize_and_center(x)
         y = self._load(y_path)
         if self.data_aug:
-            xrot = (np.random.random() * self.rotrg * 2.) - self.rotrg
-            yrot = (np.random.random() * self.rotrg * 2.) - self.rotrg
-            zrot = (np.random.random() * self.rotrg * 2.) - self.rotrg
-            xshear = (np.random.random() * self.shearrg * 2.) - self.shearrg
-            yshear = (np.random.random() * self.shearrg * 2.) - self.shearrg
-            zshear = (np.random.random() * self.shearrg * 2.) - self.shearrg
-            xshift = (np.random.random() * self.shiftrg * 2.) - self.shiftrg
-            yshift = (np.random.random() * self.shiftrg * 2.) - self.shiftrg
-            zshift = (np.random.random() * self.shiftrg * 2.) - self.shiftrg
+            # zoom
             zm = (np.random.random() * self.zoomrg * 2.) - self.zoomrg
             x = zoom(x, 1. + zm)
             y = zoom(y, 1. + zm)
+            # rotation
+            xrot = (np.random.random() * self.rotrg * 2.) - self.rotrg
+            yrot = (np.random.random() * self.rotrg * 2.) - self.rotrg
+            zrot = (np.random.random() * self.rotrg * 2.) - self.rotrg
             x = rotation(x, xrot, yrot, zrot)
             y = rotation(y, xrot, yrot, zrot)
+            # shift
+            xshift = (np.random.random() * self.shiftrg * 2.) - self.shiftrg
+            yshift = (np.random.random() * self.shiftrg * 2.) - self.shiftrg
+            zshift = (np.random.random() * self.shiftrg * 2.) - self.shiftrg
             x = shift(x, xshift, yshift, zshift)
             y = shift(y, xshift, yshift, zshift)
-            x = shear(x, xshear, yshear, zshear)
-            y = shear(y, xshear, yshear, zshear)
+            # shear
+            xyxshear = (np.random.random() * self.shearrg * 2.) - self.shearrg
+            xyyshear = (np.random.random() * self.shearrg * 2.) - self.shearrg
+            xzxshear = (np.random.random() * self.shearrg * 2.) - self.shearrg
+            xzzshear = (np.random.random() * self.shearrg * 2.) - self.shearrg
+            yzyshear = (np.random.random() * self.shearrg * 2.) - self.shearrg
+            yzzshear = (np.random.random() * self.shearrg * 2.) - self.shearrg
+            x = shear(x, xyxshear, xyyshear, xzxshear, xzzshear, yzyshear, yzzshear)
+            y = shear(x, xyxshear, xyyshear, xzxshear, xzzshear, yzyshear, yzzshear)
         y = to_categorical(y)
         return x, y
 
