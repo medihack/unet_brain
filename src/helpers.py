@@ -361,7 +361,9 @@ def show_batch(x_batch, y_batch=None, slc=80):
             plt.show()
 
 
-def show_sample(x, y=None, slc=80):
+def show_sample(x, y=None, slc=None):
+    if slc is None:
+        slc = int(x.shape[2] / 2)
     img = np.swapaxes(x, 0, 1)
     plot = plt.imshow(img[:, :, slc, 0])
     plt.gray()
