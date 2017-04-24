@@ -63,6 +63,32 @@ def get_rand_z_chunk(sample, nchunks, overlap):
     return ret_scan, ret_seg
 
 
+def resize(x, shape):
+    """Resize a volume.
+    # Arguments
+        x: Input tensor.
+        shape: The shape of the new image. May be a 3-dimensional tuple
+            (the new shape, channels excluded) or an integer (the maximum
+            side length the volume should have).
+    # Returns
+        The resized Numpy image tensor.
+    """
+    if isinstance(shape, tuple) and len(shape) == 3:
+        # add the channels to the new shape
+        shape += (x.shape[3],)
+    elif isinstance(shape, int):
+        # adjust the shape respective to its maximum side length
+        # other sides are fitted accordingly
+        r = shape / float(max(x.shape[0:3]))
+        shape = tuple([s * r for s in x.shape[0:3]])
+        shape += (x.shape[3],)
+    else:
+        raise ValueError('Invalid shape for resizing the volume.')
+
+    zoom_factor = [w / float(f) for w, f in zip(shape, x.shape)]
+    return sp_zoom(x, zoom=zoom_factor)
+
+
 # from:
 # https://github.com/fchollet/keras/blob/master/keras/preprocessing/image.py,
 # modified for volume data
@@ -348,5 +374,3 @@ def show_sample(x, y=None, slc=80):
         plot = plt.imshow(reconvert)
         plt.gray()
         plt.show()
-
-# TODO implement resizing function
