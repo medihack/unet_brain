@@ -41,6 +41,25 @@ def load_nifti(filepath):
     return img_data
 
 
+def save_nifti(img_data, filepath):
+    """Save voxel data to a Nifti file. Cave, the image doesn't retain its
+        world (e.g. MNI) space when saved.
+    # Arguments:
+        img_data: The image (voxel) data of the volume.
+        filepath: The file path of the Nifti image to save.
+    """
+    copy_data = np.copy(img_data)
+    # remove channels (there must be only one channel when saving to a
+    # nifti file)
+    copy_data.shape = copy_data.shape[0:3]
+    # convert orientation from LPS to RAS (default of nibabel)
+    copy_data = np.flip(copy_data, 0)
+    copy_data = np.flip(copy_data, 1)
+    affine = np.eye(4)
+    img = nib.Nifti1Image(copy_data, affine)
+    nib.save(img, filepath)
+
+
 class VolSegDataManager(object):
     """Class to manage volume and respective segmentation Data.
     #Arguments:
