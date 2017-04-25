@@ -63,31 +63,35 @@ def get_rand_z_chunk(sample, nchunks, overlap):
     return ret_scan, ret_seg
 
 
-def resize(x, shape):
-    """Resize a volume.
+def resize(x, shape, cval=0.):
+    """Resize an image to fit a specific shape with keeping the aspect ratio.
     # Arguments
         x: Input tensor.
-        shape: The shape of the new image. May be a 3-dimensional tuple
-            (the new shape, channels excluded) or an integer (the maximum
-            side length the volume should have).
+        shape: The 3 dimensional shape of the new image (without the channels).
     # Returns
         The resized Numpy image tensor.
     """
-    if isinstance(shape, tuple) and len(shape) == 3:
-        # add the channels to the new shape
-        shape += (x.shape[3],)
-    elif isinstance(shape, int):
-        # adjust the shape respective to its maximum side length
-        # other sides are fitted accordingly
-        r = shape / float(max(x.shape[0:3]))
-        shape = tuple([s * r for s in x.shape[0:3]])
-        shape += (x.shape[3],)
-    else:
-        raise ValueError('Invalid shape for resizing the volume.')
-
-    zoom_factor = [w / float(f) for w, f in zip(shape, x.shape)]
-    return sp_zoom(x, zoom=zoom_factor)
-
+    x_resized = np.zeros(shape + (x.shape[3],))
+    for channel in range(x.shape[3]):
+        xi = np.zeros(x.shape[0:3])
+        xi[:, :, :] = x[:, :, :, 0]
+        fzoom = np.min(np.divide(shape, x.shape[0:3]))
+        xi = sp_zoom(xi, fzoom)
+        dx = xi.shape[0] - shape[0]
+        dy = xi.shape[1] - shape[1]
+        dz = xi.shape[2] - shape[2]
+        if fzoom >= 1.0:
+            xi = np.roll(xi, (-int(dx/2), -int(dy/2), -int(dz/2)),
+                            axis=(0, 1, 2))
+            xi_new = np.full(shape, cval)
+            xi_new[:, :, :] = xi[:shape[0], :shape[1], :shape[2]]
+        else:
+            xi_new = np.full(shape, cval)
+            xi_new[:xi.shape[0], :xi.shape[1], :xi.shape[2]] = xi[:, :, :]
+            xi_new = np.roll(xi_new, (-int(dx/2), -int(dy/2), -int(dz/2)),
+                                axis=(0, 1, 2))
+        x_resized[:, :, :, channel] = xi_new[:, :, :]
+    return x_resized
 
 # from:
 # https://github.com/fchollet/keras/blob/master/keras/preprocessing/image.py,
@@ -376,3 +380,4 @@ def show_sample(x, y=None, slc=None):
         plot = plt.imshow(reconvert)
         plt.gray()
         plt.show()
+
