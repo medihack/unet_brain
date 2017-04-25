@@ -69,7 +69,7 @@ def resize(x, shape, cval=0.):
         x: Input tensor.
         shape: The 3 dimensional shape of the new image (without the channels).
     # Returns
-        The resized Numpy image tensor.
+        The resized Numpy image tensor with the centered volume.
     """
     x_resized = np.zeros(shape + (x.shape[3],))
     for channel in range(x.shape[3]):
@@ -296,10 +296,10 @@ def zoom(x, fzoom, cval=0.):
         dz = xi.shape[2] - old_shape[2]
         if fzoom >= 1.0:
             xi = np.roll(xi, (-int(dx/2), -int(dy/2), -int(dz/2)), axis=(0, 1, 2))
-            xi_new = np.zeros(old_shape)
+            xi_new = np.full(old_shape, cval)
             xi_new[:, :, :] = xi[:old_shape[0], :old_shape[1], :old_shape[2]]
         else:
-            xi_new = np.zeros(old_shape) + cval
+            xi_new = np.full(old_shape, cval)
             xi_new[:xi.shape[0], :xi.shape[1], :xi.shape[2]] = xi[:, :, :]
             xi_new = np.roll(xi_new, (-int(dx/2), -int(dy/2), -int(dz/2)), axis=(0, 1, 2))
         x[:, :, :, channel] = xi_new[:, :, :]
