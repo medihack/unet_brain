@@ -63,6 +63,58 @@ def get_rand_z_chunk(sample, nchunks, overlap):
     return ret_scan, ret_seg
 
 
+def strip(x):
+    """Deletes any empty space on the borders of a volume.
+    # Arguments
+        x: Input tensor.
+    # Returns:
+        The stripped Numpy input tensor.
+    """
+    # delete empty slices to left and right
+    slices_to_delete = []
+    for i in range(x.shape[0]):
+        if np.max(x[i, :, :, :]) > 0.0:
+            break;
+        else:
+            slices_to_delete.append(i)
+    for i in range(x.shape[0] - 1, 0, -1):
+        if np.max(x[i, :, :, :]) > 0.0:
+            break;
+        else:
+            slices_to_delete.append(i)
+    x = np.delete(x, slices_to_delete, 0)
+
+    # delete empty slice anterior and posterior
+    slices_to_delete = []
+    for i in range(x.shape[1]):
+        if np.max(x[:, i, :, :]) > 0.0:
+            break;
+        else:
+            slices_to_delete.append(i)
+    for i in range(x.shape[1] - 1, 0, -1):
+        if np.max(x[:, i, :, :]) > 0.0:
+            break;
+        else:
+            slices_to_delete.append(i)
+    x = np.delete(x, slices_to_delete, 1)
+
+    # delete empty slice superior and inferior
+    slices_to_delete = []
+    for i in range(x.shape[2]):
+        if np.max(x[:, :, i, :]) > 0.0:
+            break;
+        else:
+            slices_to_delete.append(i)
+    for i in range(x.shape[2] - 1, 0, -1):
+        if np.max(x[:, :, i, :]) > 0.0:
+            break;
+        else:
+            slices_to_delete.append(i)
+    x = np.delete(x, slices_to_delete, 2)
+
+    return x
+
+
 def resize(x, shape, cval=0.):
     """Resize an image to fit a specific shape with keeping the aspect ratio.
     # Arguments
