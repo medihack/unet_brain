@@ -63,8 +63,8 @@ def get_rand_z_chunk(sample, nchunks, overlap):
     return ret_scan, ret_seg
 
 
-def strip(x):
-    """Deletes any empty space on the borders of a volume.
+def strip(x, threshold=0.):
+    """Deletes any empty slices on the boundary of a volume.
     # Arguments
         x: Input tensor.
     # Returns:
@@ -73,12 +73,12 @@ def strip(x):
     # delete empty slices to left and right
     slices_to_delete = []
     for i in range(x.shape[0]):
-        if np.max(x[i, :, :, :]) > 0.0:
+        if np.max(x[i, :, :, :]) > threshold:
             break;
         else:
             slices_to_delete.append(i)
     for i in range(x.shape[0] - 1, 0, -1):
-        if np.max(x[i, :, :, :]) > 0.0:
+        if np.max(x[i, :, :, :]) > threshold:
             break;
         else:
             slices_to_delete.append(i)
@@ -87,12 +87,12 @@ def strip(x):
     # delete empty slice anterior and posterior
     slices_to_delete = []
     for i in range(x.shape[1]):
-        if np.max(x[:, i, :, :]) > 0.0:
+        if np.max(x[:, i, :, :]) > threshold:
             break;
         else:
             slices_to_delete.append(i)
     for i in range(x.shape[1] - 1, 0, -1):
-        if np.max(x[:, i, :, :]) > 0.0:
+        if np.max(x[:, i, :, :]) > threshold:
             break;
         else:
             slices_to_delete.append(i)
@@ -101,12 +101,12 @@ def strip(x):
     # delete empty slice superior and inferior
     slices_to_delete = []
     for i in range(x.shape[2]):
-        if np.max(x[:, :, i, :]) > 0.0:
+        if np.max(x[:, :, i, :]) > threshold:
             break;
         else:
             slices_to_delete.append(i)
     for i in range(x.shape[2] - 1, 0, -1):
-        if np.max(x[:, :, i, :]) > 0.0:
+        if np.max(x[:, :, i, :]) > threshold:
             break;
         else:
             slices_to_delete.append(i)
