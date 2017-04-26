@@ -115,6 +115,42 @@ def strip(x, threshold=0.):
     return x
 
 
+def fill(x, left=0, right=0, front=0, back=0, top=0, bottom=0, cval=0.):
+    """Add (empty) slices to the boundary of a volume.
+    # Arguments:
+        x: Input sensor.
+        left: Number of slices to add to the left.
+        right: Number of slices to add to the right.
+        front: Number of slices to add to the front (anterior).
+        bottom: Number of slices to add to the back (posterior).
+        top: Number of slices to add to the top (superior).
+        bottom: Number of slices to add to the bottom (inferior).
+        cval: The value to use for those slices.
+    # Returns:
+        The filled up numpy tensor (that has a new shape).
+    """
+    z = np.copy(x)
+    if left > 0:
+        t = np.full((left,) + z.shape[1:4], cval)
+        z = np.append(z, t, axis=0)
+    if right > 0:
+        t = np.full((right,) + z.shape[1:4], cval)
+        z = np.append(t, z, axis=0)
+    if front > 0:
+        t = np.full((z.shape[0], front) + z.shape[2:4], cval)
+        z = np.append(t, z, axis=1)
+    if back > 0:
+        t = np.full((z.shape[0], back) + z.shape[2:4], cval)
+        z = np.append(z, t, axis=1)
+    if top > 0:
+        t = np.full((z.shape[0], z.shape[1], top) + (z.shape[3],), cval)
+        z = np.append(z, t, axis=2)
+    if bottom > 0:
+        t = np.full((z.shape[0], z.shape[1], bottom) + (z.shape[3],), cval)
+        z = np.append(t, z, axis=2)
+    return z
+
+
 def resize(x, shape, cval=0.):
     """Resize an image to fit a specific shape with keeping the aspect ratio.
     # Arguments
