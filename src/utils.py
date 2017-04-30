@@ -25,6 +25,7 @@ def load_nifti(filepath):
         channels have the same value for one voxel."""
     img = nib.load(filepath)
     img_data = img.get_data()
+
     # make sure volume orientation is LPS (DICOM default)
     orientation = ''.join(nib.aff2axcodes(img.affine))
     if not orientation == 'LPS':
@@ -36,26 +37,34 @@ def load_nifti(filepath):
         else:
             raise ValueError('Unsupported orientation of Nifti file: ' +
                          orientation)
-    # make it four dimensional (last dimension are channels)
+
+    # add a channels dimension (if not already present)
     if len(img_data.shape) < 4:
         img_data.shape += (1,)
+
     return img_data
 
 
-def save_nifti(img_data, filepath):
+def save_nifti(img_data, filepath, channel=None):
     """Save voxel data to a Nifti file. Cave, the image doesn't retain its
         world (e.g. MNI) space when saved.
     # Arguments
         img_data: The image (voxel) data of the volume.
         filepath: The file path of the Nifti image to save.
+        channel: If an explicit channel is provided then only that channel
+            is saved to a 3-dimensional Nifti file. Otherwise all channels
+            will be saved to a 4-dimensional Nifti file.
     """
-    copy_data = np.copy(img_data)
-    # remove channels (there must be only one channel when saving to a
-    # nifti file)
-    copy_data.shape = copy_data.shape[0:3]
+    copy_data = None
+    if channel is not None:
+        copy_data = np.copy(img_data[:, :, :, channel])
+    else:
+        copy_data = np.copy(img_data)
+
     # convert orientation from LPS to RAS (default of nibabel)
     copy_data = np.flip(copy_data, 0)
     copy_data = np.flip(copy_data, 1)
+
     affine = np.eye(4)
     img = nib.Nifti1Image(copy_data, affine)
     nib.save(img, filepath)
