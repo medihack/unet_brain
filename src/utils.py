@@ -498,33 +498,45 @@ def apply_transform(x,
     return x
 
 
-def show_batch(x_batch, y_batch=None, slc=80):
+def show_batch(x_batch, y_batch=None, slc=None, channel=0, axis=2):
     for i in range(len(x_batch)):
-        img = x_batch[i,:,:,slc,0]
-        img = np.swapaxes(img, 0, 1)
-        plot = plt.imshow(img)
-        plt.gray()
-        plt.show()
+        img = x_batch[i, :, :, slc, 0]
+        show_sample(img, slc=slc, channel=channel, axis=axis)
         if y_batch != None:
-            img = y_batch[i,:,:,:,:]
-            img = np.swapaxes(img, 0, 1)
-            plot = plt.imshow(img[:, :, slc, 0])
-            plt.gray()
-            plt.show()
+            img = y_batch[i, :, :, :, :]
+            show_sample(img, slc=slc)
 
 
-def show_sample(x, y=None, slc=None):
+def show_sample(x, slc=None, channel=0, axis=2):
+    """Show a slice of an image volume.
+    # Arguments:
+        x: Input tensor (image volume with channels).
+        slc: The slice number to show (in LPS orientation).
+        channel: The channel of the input tensor to show (0 is the default).
+        axis: The axis along which the slice is selected.
+            0 - along x-axis (sagittal / yz plane)
+            1 - along y-axis (coronal / xz plane)
+            2 - along z-axis (axial / xy plane), default
+    """
     if slc is None:
-        slc = int(x.shape[2] / 2)
-    img = np.swapaxes(x, 0, 1)
-    plot = plt.imshow(img[:, :, slc, 0])
+        slc = int(x.shape[axis] / 2)
+    plot=None
+
+    if axis == 0:
+        img = np.swapaxes(x, 1, 2)
+        img = np.flip(img, 1)
+        plot = plt.imshow(img[slc, :, :, channel])
+    elif axis == 1:
+        img = np.transpose(x, (2, 1, 0, 3))
+        img = np.flip(img, 0)
+        plot = plt.imshow(img[:, slc, :, channel])
+    elif axis == 2:
+        img = np.swapaxes(x, 0, 1)
+        plot = plt.imshow(img[:, :, slc, channel])
+    else:
+        raise ValueError('Invalid axis for selecting a slice to show.')
     plt.gray()
     plt.show()
-    if y != None:
-        img = np.swapaxes(y, 0, 1)
-        plot = plt.imshow(img[:, :, slc, 0])
-        plt.gray()
-        plt.show()
 
 
 class VolSegDataManager(object):
